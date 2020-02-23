@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from pylab import rcParams
 import sys
-sys.setrecursionlimit(100000) #for high growth
 rcParams['figure.figsize'] = 50, 10
 
 def convertToBlackAndWhite(img_path):
@@ -49,7 +48,7 @@ def showImgLabel(img):
                 print(y,end="")
         print()
 
-def update(i,j,label,img,label_img):
+def update(i1,j1,label,img,label_img):
     '''
     Update label of given position (i,j) and its neighbours recursively.
     If growth is high and recursion depth is more hence need to increase 
@@ -58,23 +57,24 @@ def update(i,j,label,img,label_img):
     row = label_img.shape[0]
     col = label_img.shape[1]
     
-    label_img[i][j] = label #setting given position label
+    st = list()
+    st.append((i1,j1))
     
-    neighbours = list()
-    
-    # all 8 neighbours coordinates
-    coordinates = [(i-1,j-1),(i-1,j),(i-1,j+1),
-                   (i,j-1),(i,j+1),
-                   (i+1,j-1),(i+1,j),(i+1,j+1)]
-    
-    # checks for valid coordinates, black unlabelled pixels
-    for x,y in coordinates:
-        if(x >=0 and x < row and y >= 0 and y < col and 
-           img[x][y] == 0 and label_img[x][y] == 0):
-            neighbours.append((x,y))
-    
-    for x,y in neighbours:
-        update(x,y,label,img,label_img)
+    while(len(st) > 0):
+        i, j = st.pop(0)
+        if(label_img[i][j] == 0):
+            label_img[i][j] = label #setting given position label
+            
+            # all 8 neighbours coordinates
+            coordinates = [(i-1,j-1),(i-1,j),(i-1,j+1),
+                           (i,j-1),(i,j+1),
+                           (i+1,j-1),(i+1,j),(i+1,j+1)]
+        
+            # checks for valid coordinates, black unlabelled pixels
+            for x,y in coordinates:
+                if(x >=0 and x < row and y >= 0 and y < col 
+                   and img[x][y] == 0 and label_img[x][y] == 0):
+                    st.append((x,y))
 
 def label(img):
     '''
@@ -204,10 +204,13 @@ def growthN(img,n):
 
 if __name__ == "__main__":
     
-    img = convertToBlackAndWhite("d1.png")
+    img = convertToBlackAndWhite("d2.jpg")
+    print(img.shape)
     count , label_img = label(img)
+#    showImgLabel(label_img)
     boxedImg, label_boundary = boxing(img,label_img)
-    segmentation(img,label_boundary,"./segment/","d1_")
+#    cv2.imwrite("d2_boxed.jpg",boxedImg)
+    segmentation(img,label_boundary,"./segment/","d2_")
     
 #    plt.subplot(3,1,1)
 #    plt.imshow(cv2.cvtColor(img,cv2.COLOR_BGR2RGB))
